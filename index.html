@@ -11,12 +11,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    
 </head>
 
 <body>
 
     <div class="container">
+        
+        <main>
+            <div class="circle">
+                <div id="stopwatch" class="stopwatch">00:00</div>
+                <div class="buttons">
+                    <div class="stop" onclick="stop()"></div>
+                    <div id="play-pause" class="paused" onclick="playPause()"></div>
+                </div>
+            </div>
+            <div id="seconds-sphere" class="seconds-sphere"></div>
+        </main>
+
         <div class="box">
             <div class="perfil">
                 <div id="fecha"></div>
@@ -36,7 +47,9 @@
                 <ul id="lista"></ul>
             </div>
         </div>
-        <script src="index.js"></script>
+    </div>
+
+    <script src="index.js"></script>
 </body>
 
 </html>
