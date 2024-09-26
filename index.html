@@ -21,34 +21,45 @@
             <div class="circle">
                 <div id="stopwatch" class="stopwatch">00:00</div>
                 <div class="buttons">
-                    <!-- Botón para detener cronómetro -->
                     <div class="stop" onclick="stop()" role="button" aria-label="Detener cronómetro" tabindex="0"></div>
-                    <!-- Botón para pausar/reanudar cronómetro -->
-                    <div id="play-pause" class="paused" onclick="playPause()" role="button" aria-label="Pausar/Reanudar cronómetro" tabindex="0"></div>
+                    <div id="play-pause" class="paused" onclick="playPause()" role="button"
+                        aria-label="Pausar/Reanudar cronómetro" tabindex="0"></div>
                 </div>
             </div>
+
             <div id="seconds-sphere" class="seconds-sphere"></div>
+
+
+            <div class="botones-tiempo">
+                <button id="boton-10min">10 min</button>
+                <button id="boton-20min">20 min</button>
+                <button id="boton-30min">30 min</button>
+            </div>
         </main>
 
+        <!-- Lista de Tareas -->
         <div class="box">
             <div class="perfil">
                 <div id="fecha"></div>
                 <h1>Bienvenido</h1>
                 <span>Vamos a cumplir tus metas</span>
             </div>
-
+            
             <div id="mensaje" class="mensaje-oculto"></div>
-
+            
             <div class="agregar-tarea">
                 <input type="text" id="input" placeholder="Agregar una tarea">
-                <!-- Botón para agregar tarea -->
-                <i id="boton-enter" class="fas fa-plus-circle" role="button" aria-label="Agregar tarea" tabindex="0"></i>
+                <i id="boton-enter" class="fas fa-plus-circle" role="button" aria-label="Agregar tarea"
+                    tabindex="0"></i>
             </div>
 
             <div class="seccion-tarea">
                 <h3>Estas son tus Tareas Pendientes</h3>
                 <ul id="lista"></ul>
             </div>
+
+            
+
         </div>
     </div>
 
