@@ -9,8 +9,11 @@ const secondsSphere = document.getElementById('seconds-sphere');
 const check = 'fa-check-circle';
 const uncheck = 'fa-circle';
 const lineThrough = 'line-through';
-let LIST;
+let LIST = [];
 let id = 0;
+let stopwatchInterval;
+let runningTime = 0;
+let isRunning = false;
 
 
 const FECHA = new Date();
@@ -74,7 +77,12 @@ function tareaRealizada(element) {
 
 
 function tareaEliminada(element) {
-    element.parentNode.parentNode.removeChild(element.parentNode);
+    const tarea = element.parentNode;
+    tarea.classList.add('fade-out-task'); // Añade la clase de desvanecimiento
+    setTimeout(() => {
+        tarea.remove(); // Elimina la tarea después de la animación
+    }, 500); // El tiempo debe coincidir con la duración de la animación CSS
+
     LIST[element.id].eliminado = true;
     mostrarMensaje('Tarea eliminada');
 }
@@ -91,6 +99,7 @@ function manejarNuevaTarea() {
             eliminado: false
         });
         localStorage.setItem('TODO', JSON.stringify(LIST));
+        localStorage.setItem('TIMESTAMP', Date.now()); // Guardar el tiempo actual
         id++;
         input.value = '';
         mostrarMensaje('Tarea agregada con éxito');
@@ -103,8 +112,32 @@ function limpiarTareas() {
     lista.innerHTML = '';
     LIST = [];
     id = 0;
-
 }
+
+function verificarInactividad() {
+    const timestamp = localStorage.getItem('TIMESTAMP');
+    if (timestamp) {
+        const ahora = Date.now();
+        const diferenciaHoras = (ahora - timestamp) / (1000 * 60 * 60); // Convertir a horas
+        if (diferenciaHoras > 3) {
+            limpiarTareas();
+            mostrarMensaje('Las tareas han sido eliminadas por inactividad.');
+        }
+    }
+}
+
+window.addEventListener('load', () => {
+    verificarInactividad();
+    let data = localStorage.getItem('TODO');
+    if (data) {
+        LIST = JSON.parse(data);
+        id = LIST.length;
+        cargarLista(LIST);
+    } else {
+        LIST = [];
+        id = 0;
+    }
+});
 
 botonEnter.addEventListener('click', manejarNuevaTarea);
 
@@ -145,42 +178,81 @@ function cargarLista(array) {
     });
 }
 
-let stopwatchInterval;
-let runningTime = 0;
+function autoGuardar() {
+    setInterval(() => {
+        localStorage.setItem('TODO', JSON.stringify(LIST));
+        localStorage.setItem('TIMESTAMP', Date.now()); 
+        console.log("Datos guardados automáticamente.");
+    }, 60000); 
+}
+
 
 const playPause = () => {
-    const isPaused = !playPauseButton.classList.contains('running');
-    if (isPaused) {
+    // Solo iniciar si no está corriendo ya
+    if (!isRunning) {
         playPauseButton.classList.add('running');
         start();
+        isRunning = true;  // Marcar como activo
     } else {
         playPauseButton.classList.remove('running');
         pause();
+        isRunning = false; // Marcar como inactivo
     }
 }
 
 const pause = () => {
     secondsSphere.style.animationPlayState = 'paused';
-    clearInterval(stopwatchInterval);
+    clearInterval(stopwatchInterval); // Detener cronómetro
+    stopwatchInterval = null; // Resetear para evitar duplicados
 }
+
 
 const stop = () => {
     secondsSphere.style.transform = 'rotate(-90deg) translateX(60px)';
     secondsSphere.style.animation = 'none';
     playPauseButton.classList.remove('running');
     runningTime = 0;
-    clearInterval(stopwatchInterval);
+    clearInterval(stopwatchInterval);  // Detener cronómetro
+    stopwatchInterval = null;  // Resetear el valor
     stopwatch.textContent = '00:00';
+    isRunning = false; // Resetear estado
 }
 
 const start = () => {
-    secondsSphere.style.animation = 'rotacion 60s linear infinite';
-    let startTime = Date.now() - runningTime;
-    secondsSphere.style.animationPlayState = 'running';
-    stopwatchInterval = setInterval( () => {
-        runningTime = Date.now() - startTime;
-        stopwatch.textContent = calculateTime(runningTime);
-    }, 1000)
+    if (!stopwatchInterval) {  // Solo iniciar si no hay un cronómetro ya corriendo
+        secondsSphere.style.animation = 'rotacion 60s linear infinite';
+        let startTime = Date.now() - runningTime;
+        secondsSphere.style.animationPlayState = 'running';
+        stopwatchInterval = setInterval(() => {
+            runningTime = Date.now() - startTime;
+            stopwatch.textContent = calculateTime(runningTime);
+            localStorage.setItem('RUNNING_TIME', runningTime); // Guardar tiempo
+            localStorage.setItem('TIMESTAMP', Date.now()); // Guardar hora actual
+        }, 1000);
+    }
+}
+
+function verificarInactividadCronometro() {
+    const timestamp = localStorage.getItem('TIMESTAMP');
+    const savedTime = localStorage.getItem('RUNNING_TIME');
+    const savedIsRunning = localStorage.getItem('IS_RUNNING');
+    if (timestamp && runningTime) {
+        const ahora = Date.now();
+        const diferenciaHoras = (ahora - timestamp) / (1000 * 60 * 60);
+        if (diferenciaHoras > 3) {
+            stop(); // Reiniciar cronómetro después de 3 horas
+            mostrarMensaje('El cronómetro ha sido reiniciado por inactividad.');
+        } else {
+            // Restaurar el cronómetro
+            secondsSphere.style.animation = 'rotacion 60s linear infinite';
+            let startTime = Date.now() - runningTime;
+            secondsSphere.style.animationPlayState = 'running';
+            stopwatchInterval = setInterval(() => {
+                runningTime = Date.now() - startTime;
+                stopwatch.textContent = calculateTime(runningTime);
+            }, 1000);
+        }
+    }
 }
 
 const calculateTime = runningTime => {
@@ -192,3 +264,9 @@ const calculateTime = runningTime => {
 
     return `${display_minutes}:${display_seconds}`
 }
+
+window.addEventListener('load', () => {
+    verificarInactividadCronometro();
+});
+
+window.addEventListener('load', autoGuardar);
